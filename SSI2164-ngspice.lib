@@ -1,0 +1,38 @@
+*************************************************
+* SSI2164 gain given (approx) by:
+* Iout = Iin * e ^ (-q*A*vctl/kT)
+*
+* Where
+* A = 0.1 (internal voltage divider)
+* q = {1.602176634×10^(−19)} -- electron charge
+* k = {1.380649×10^(−23)} - Boltzmann's constant
+* T = temperature in Kelvin
+*
+* See: http://soundsemiconductor.com/downloads/ssi2164datasheet.pdf
+*
+* This follows that mathematical model.
+*
+* Limitiations of this model:
+*  - Makes no reference to vcc/vee (i.e. it has unlimited curent
+*    source/sinking capability
+*  - Does not respect the actual usable range of Vctrl
+*  - Does not complain if the output is not returned to a virtual ground
+*
+*************************************************
+
+* subcircuit for single cell
+.subckt SSI2164_cell in out vctl
+* Input retruns current to gnd with zero resistance
+R1 in 0 0
+Bout 0 out i=i(R1)*exp(-1160.45*v(vctl)/(temper+273.15))
+* Impedience of vctl pin
+R2 vctl 0 10k
+.ends
+
+* Subcircuit for complete device
+.subckt SSI2164 mode in1 vctl1 out1 out2 vctl2 in2 gnd vee in3 vctl3 out3 out4 vctl4 in4 vcc
+X1 in1 out1 vctl1 SSI2164_cell
+X2 in2 out2 vctl2 SSI2164_cell
+X3 in3 out3 vctl3 SSI2164_cell
+X4 in4 out4 vctl4 SSI2164_cell
+.ends
